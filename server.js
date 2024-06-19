@@ -66,6 +66,10 @@ app.post('/process', async (req, res) => {
     }
 });
 
+app.get('/hello', (req, res) => {
+    res.send({message: 'hello world'})
+})
+
 // Start the server
 app.listen(port, () => {
     console.log(`Server is started on ${port}`);

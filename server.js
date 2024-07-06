@@ -5,6 +5,8 @@ const puppeteer = require('puppeteer');
 const fs = require('fs').promises;
 const PNG = require('pngjs').PNG;
 const pixelmatch = require('pixelmatch');
+const mongoose = require('mongoose');
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -12,6 +14,14 @@ const renderedImagePath = './rendered.png';
 
 app.use(cors());
 app.use(bodyParser.json());
+
+mongoose.connect(process.env.MONGODB_URL);
+
+const visitorSchema = new mongoose.Schema({
+    cssbattle_visitor_count: { type: Number, default: 0 },
+});
+
+const Visitor = mongoose.model('Visitor', visitorSchema);
 
 // Function to render HTML content to an image using Puppeteer
 const renderHTMLToImage = async (htmlContent) => {
@@ -52,6 +62,26 @@ const executeComparison = async (htmlContent, challengeId) => {
 
     return score;
 };
+
+app.get('/', async (req, res) => {
+    let visitor = await Visitor.findOne({});
+    if (!visitor) {
+        visitor = new Visitor({ cssbattle_visitor_count: 0 });
+        await visitor.save();
+    }
+    res.json({ cssbattle_visitor_count: visitor.cssbattle_visitor_count });
+});
+
+app.post('/increment-visitor', async (req, res) => {
+    let visitor = await Visitor.findOne({});
+    if (!visitor) {
+        visitor = new Visitor({ cssbattle_visitor_count: 1 });
+    } else {
+        visitor.cssbattle_visitor_count += 1;
+    }
+    await visitor.save();
+    res.json({ cssbattle_visitor_count: visitor.cssbattle_visitor_count });
+});
 
 // Endpoint to process HTML content and return similarity score
 app.post('/process', async (req, res) => {

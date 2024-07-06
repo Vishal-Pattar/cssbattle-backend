@@ -15,7 +15,8 @@ const renderedImagePath = './rendered.png';
 app.use(cors());
 app.use(bodyParser.json());
 
-mongoose.connect(process.env.MONGODB_URL);
+const uri = process.env.MONGODB_URL;
+mongoose.connect(uri);
 
 const visitorSchema = new mongoose.Schema({
     cssbattle_visitor_count: { type: Number, default: 0 },
